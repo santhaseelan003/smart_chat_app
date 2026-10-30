@@ -32,7 +32,11 @@ const sessionMiddleware = session({
   secret: process.env.SESSION_SECRET || 'development-only-change-this-session-secret-before-deployment',
   resave: false,
   saveUninitialized: false,
-  store: new SQLiteStore({ db: 'sessions.sqlite', dir: path.resolve(process.cwd(), 'database') }),
+  store: new SQLiteStore({
+  db: 'sessions.sqlite',
+  dir: process.env.SESSION_DB_DIR ||
+       path.resolve(process.cwd(), 'database')
+}),
   cookie: { httpOnly: true, sameSite: 'lax', secure: process.env.COOKIE_SECURE === 'true', maxAge: 1000 * 60 * 60 * 24 * 7 }
 });
 app.use(sessionMiddleware);
@@ -52,4 +56,6 @@ app.use((error, req, res, next) => {
 });
 registerChat(io, sessionMiddleware);
 const port = Number(process.env.PORT) || 3000;
-server.listen(port, () => console.log(`Smart Chat App running at http://localhost:${port}`));
+server.listen(port, '0.0.0.0', () => {
+  console.log(`Smart Chat App running on port ${port}`);
+});
